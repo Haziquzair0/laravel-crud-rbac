@@ -1,5 +1,7 @@
 <?php
 
+
+
 return [
 
     /*
@@ -121,6 +123,19 @@ return [
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fortify Configuration
+    |--------------------------------------------------------------------------
+    |
+    | This configuration is published using the Fortify service provider.
+    |
+    */
+
+    'fortify' => [
+        'provider' => 'Laravel\Fortify\FortifyServiceProvider',
     ],
 
 ];

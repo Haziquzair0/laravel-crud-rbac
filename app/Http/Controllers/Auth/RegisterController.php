@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Http\Requests\RegisterRequest; // Import the RegisterRequest
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+
 
 class RegisterController extends Controller
 {
@@ -39,24 +41,21 @@ class RegisterController extends Controller
      */
     public function register(RegisterRequest $request)
     {
-        $user = User::create([
-            'name' => $request->name,
-            'nickname' => $request->nickname, // Save the nickname
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'phone_no' => $request->phone_no, // Save the phone number
-            'city' => $request->city,         // Save the city
-        ]);
+    $salt = Str::random(16); // Generate a random 16-character salt
 
-        if ($request->hasFile('avatar')) {
-            $avatarPath = $request->file('avatar')->store('avatars', 'public');
-            $user->avatar = $avatarPath;
-            $user->save(); // Save the avatar path after user creation
-        }
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password . $salt), // Append the salt to the password
+        'salt' => $salt,
+        'nickname' => $request->nickname,
+        'avatar' => $request->avatar,
+        'phone_no' => $request->phone_no,
+        'city' => $request->city,
+    ]);
 
-        // Log the user in
-   
-        // Redirect to the desired location
-        return redirect($this->redirectTo)->with('success', 'Registration successful!');
+    \Illuminate\Support\Facades\Auth::login($user);
+
+    return redirect($this->redirectTo)->with('success', 'Registration successful!');
     }
 }
