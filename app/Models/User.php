@@ -19,7 +19,6 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name', 'email', 'password', 'nickname', 'avatar', 'phone_no', 'city',
-    
     ];
 
     /**
@@ -43,5 +42,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Define the relationship with the UserRole model.
+     */
+    public function role()
+    {
+        return $this->hasOne(UserRole::class, 'user_id', 'id');
     }
 }

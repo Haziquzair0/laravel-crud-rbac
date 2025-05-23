@@ -7,16 +7,26 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
-use App\Models\User; // Import the User model
+use App\Models\User;
 
 class LoginController extends Controller
 {
     /**
      * Where to redirect users after login.
      *
-     * @var string
+     * @return string
      */
-    protected $redirectTo = '/todo';
+    protected function redirectTo()
+    {
+        $user = Auth::user();
+
+        // Redirect based on user role
+        if ($user->role && $user->role->role_name === 'Admin') {
+            return '/admin/dashboard'; // Redirect admin users to the admin dashboard
+        }
+
+        return '/todo'; // Redirect regular users to the todo page
+    }
 
     /**
      * Show the login form.
@@ -49,11 +59,11 @@ class LoginController extends Controller
         // Find the user by email
         $user = User::where('email', $request->email)->first();
 
-        // Check if the user exists and the password matches (with salt)
-        if ($user && Hash::check($request->password . $user->salt, $user->password)) {
+        // Check if the user exists and the password matches
+        if ($user && Hash::check($request->password, $user->password)) {
             Auth::login($user); // Log the user in
             RateLimiter::clear($key); // Clear rate limiter on successful login
-            return redirect()->intended($this->redirectTo);
+            return redirect()->intended($this->redirectTo());
         }
 
         // Increment rate limiter on failed login

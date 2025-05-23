@@ -28,8 +28,9 @@
                 $user = Auth::user();
                 $role = \App\Models\UserRole::where('user_id', $user->id)->first();
                 $canCreate = false;
+
                 if ($role) {
-                    // Use the permissions relationship if it exists, otherwise fallback to direct query
+                    // Check if the role has the "Create" permission
                     if (method_exists($role, 'permissions')) {
                         $canCreate = $role->permissions()->where('description', 'Create')->exists();
                     } else {
