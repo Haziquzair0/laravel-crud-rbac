@@ -31,16 +31,24 @@ class TodoController extends Controller
     {
         return view('todo.add');
     }
+
     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
+        // Add validation
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'status' => 'required|in:pending,completed',
+        ]);
+
         $userId = Auth::user()->id;
-        $input = $request->input();
+        $input = $request->only(['title', 'description', 'status']);
         $input['user_id'] = $userId;
         $todoStatus = Todo::create($input);
 
@@ -54,6 +62,7 @@ class TodoController extends Controller
 
         return redirect('todo')->with($type, $message);
     }
+
     /**
      * Display the specified resource.
      */
@@ -80,21 +89,29 @@ class TodoController extends Controller
             return redirect('todo')->with('error', 'Todo not found');
         }
     }
+
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, $id)
     {
+        // Add validation
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'status' => 'required|in:pending,completed',
+        ]);
+
         $userId = Auth::user()->id;
         $todo = Todo::find($id);
         if (!$todo) {
             return redirect('todo')->with('error', 'Todo not found.');
         }
-        $input = $request->input();
+        $input = $request->only(['title', 'description', 'status']);
         $input['user_id'] = $userId;
         $todoStatus = $todo->update($input);
         if ($todoStatus) {
@@ -115,14 +132,15 @@ class TodoController extends Controller
         if (!$todo) {
             $respStatus = 'error';
             $respMsg = 'Todo not found';
-        }
-        $todoDelStatus = $todo->delete();
-        if ($todoDelStatus) {
-            $respStatus = 'success';
-            $respMsg = 'Todo deleted successfully';
         } else {
-            $respStatus = 'error';
-            $respMsg = 'Oops something went wrong. Todo not deleted successfully';
+            $todoDelStatus = $todo->delete();
+            if ($todoDelStatus) {
+                $respStatus = 'success';
+                $respMsg = 'Todo deleted successfully';
+            } else {
+                $respStatus = 'error';
+                $respMsg = 'Oops something went wrong. Todo not deleted successfully';
+            }
         }
         return redirect('todo')->with($respStatus, $respMsg);
     }

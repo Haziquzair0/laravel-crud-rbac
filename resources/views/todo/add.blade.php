@@ -8,7 +8,7 @@
         </div>
         <div class="col-md-6">
             <div class="float-right">
-                <a href="{{ route('todo.add') }}" class="btn btn-primary">Back</a>
+                <a href="{{ route('todo.index') }}" class="btn btn-primary">Back</a>
             </div>
         </div>
         <br>
@@ -23,25 +23,45 @@
                     {{ session('error') }}
                 </div>
             @endif
-      <form action="{{ route('todo.store') }}" method="POST">
-        @csrf
-        <div class="form-group">
-          <label for="title">Title:</label>
-          <input type="text" class="form-control" id="title" name="title">
-        </div>
-        <div class="form-group">
-          <label for="description">Description:</label>
-          <textarea name="description" class="form-control" id="description" rows="5"></textarea>
-        </div>
-        <div class="form-group">
-        <label for="status">Select todo status</label>
-        <select class="form-control" id="status" name="status">
-          <option value="pending">Pending</option>
-          <option value="completed">Completed</option>
-        </select>
-        </div>
-        <button type="submit" class="btn btn-default">Submit</button>
-      </form>
+
+            @php
+                $user = Auth::user();
+                $role = \App\Models\UserRole::where('user_id', $user->id)->first();
+                $canCreate = false;
+                if ($role) {
+                    // Use the permissions relationship if it exists, otherwise fallback to direct query
+                    if (method_exists($role, 'permissions')) {
+                        $canCreate = $role->permissions()->where('description', 'Create')->exists();
+                    } else {
+                        $canCreate = \App\Models\RolePermission::where('role_id', $role->role_id)
+                            ->where('description', 'Create')->exists();
+                    }
+                }
+            @endphp
+
+            @if($canCreate)
+                <form action="{{ route('todo.store') }}" method="POST">
+                    @csrf
+                    <div class="form-group">
+                      <label for="title">Title:</label>
+                      <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="description">Description:</label>
+                      <textarea name="description" class="form-control" id="description" rows="5" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Select todo status</label>
+                        <select class="form-control" id="status" name="status" required>
+                          <option value="pending">Pending</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </form>
+            @else
+                <div class="alert alert-warning">You do not have permission to create a new To-Do.</div>
+            @endif
         </div>
     </div>
 </div>

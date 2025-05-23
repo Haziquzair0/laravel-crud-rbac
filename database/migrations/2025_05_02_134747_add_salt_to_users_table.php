@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Add the salt column
-            $table->string('salt')->nullable()->after('password');
+            //
         });
     }
 
@@ -23,8 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Remove the salt column
-            $table->dropColumn('salt');
+            //
         });
     }
 };
