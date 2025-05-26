@@ -12,34 +12,21 @@ use App\Models\User;
 class LoginController extends Controller
 {
     /**
-     * Where to redirect users after login.
-     *
-     * @return string
-     */
-    protected function redirectTo()
-    {
-        $user = Auth::user();
-
-        // Redirect based on user role
-        if ($user->role && $user->role->role_name === 'Admin') {
-            return '/admin/dashboard'; // Redirect admin users to the admin dashboard
-        }
-
-        return '/todo'; // Redirect regular users to the todo page
-    }
-
-    /**
      * Show the login form.
      *
      * @return \Illuminate\View\View
      */
     public function showLoginForm()
     {
-        return view('auth.login'); // Ensure you have a Blade file at resources/views/auth/login.blade.php
+        // Ensure you have a Blade file at resources/views/auth/login.blade.php
+        return view('auth.login');
     }
 
     /**
      * Custom login logic to handle salted passwords and rate limiting.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function login(Request $request)
     {
@@ -63,7 +50,17 @@ class LoginController extends Controller
         if ($user && Hash::check($request->password, $user->password)) {
             Auth::login($user); // Log the user in
             RateLimiter::clear($key); // Clear rate limiter on successful login
-            return redirect()->intended($this->redirectTo());
+
+            // Redirect based on user role
+            $role = optional($user->role)->role_name; // Access the role_name from the relationship
+
+        if ($role === 'Admin') {
+            return redirect()->route('admin.dashboard')->with('success', 'Welcome Admin!');
+        } elseif ($role === 'User') {
+            return redirect()->route('todo.index')->with('success', 'Welcome User!');
+        } else {
+            return redirect('/')->with('error', 'Role not assigned.');
+        }
         }
 
         // Increment rate limiter on failed login

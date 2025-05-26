@@ -9,15 +9,19 @@ class UserRole extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'role_id';
+    protected $table = 'user_roles'; // Ensure this matches your database table name
+    protected $primaryKey = 'role_id'; // Ensure this matches your primary key column
 
-    protected $fillable = ['user_id', 'role_name', 'description'];
+    protected $fillable = [
+        'role_name',
+        'description',
+    ];
 
     /**
-     * Define the relationship with RolePermission.
+     * Define the relationship with the RolePermission model.
      */
     public function permissions()
     {
-        return $this->hasMany(\App\Models\RolePermission::class, 'role_id', 'role_id');
+        return $this->belongsToMany(RolePermission::class, 'role_permission', 'role_id', 'permission_id');
     }
 }

@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -14,12 +12,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+    // Create an admin user if it doesn't already exist
+    User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'password' => bcrypt('password'), // Replace with a secure password
+                'role_id' => 1, // Assuming 1 is the role_id for Admin
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-$this->call(RoleAndPermissionSeeder::class);
-    }
+    // Create a regular user if it doesn't already exist
+    User::firstOrCreate(
+            ['email' => 'user@example.com'],
+            [
+                'name' => 'Regular User',
+                'password' => bcrypt('password'), // Replace with a secure password
+                'role_id' => 2, // Assuming 2 is the role_id for User
+            ]
+        );
+}
 }

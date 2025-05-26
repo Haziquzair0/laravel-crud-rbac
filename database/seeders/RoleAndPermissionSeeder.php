@@ -3,46 +3,33 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\RolePermission;
 use App\Models\UserRole;
+use App\Models\RolePermission;
 
 class RoleAndPermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        // Assign "User" role to user with ID 2
-        $userRole = UserRole::create([
-            'user_id' => 2, // Regular User's actual ID
-            'role_name' => 'User',
-            'description' => 'Regular user'
-        ]);
-
-        // Give "User" role the "Create" and "Retrieve" permissions
-        RolePermission::create([
-            'role_id' => $userRole->role_id,
-            'description' => 'Create'
-        ]);
-        RolePermission::create([
-            'role_id' => $userRole->role_id,
-            'description' => 'Retrieve'
-        ]);
-
-        // Assign "Admin" role to user with ID 1
+        // Create Admin Role
         $adminRole = UserRole::create([
-            'user_id' => 1, // Admin User's actual ID
             'role_name' => 'Admin',
-            'description' => 'Administrator'
+            'description' => 'Administrator with full access',
         ]);
 
-        // Give "Admin" role all permissions
-        foreach (['Create', 'Retrieve', 'Update', 'Delete'] as $perm) {
-            RolePermission::create([
-                'role_id' => $adminRole->role_id,
-                'description' => $perm
-            ]);
-        }
+        // Assign permissions to Admin
+        RolePermission::create(['role_id' => $adminRole->role_id, 'description' => 'Create']);
+        RolePermission::create(['role_id' => $adminRole->role_id, 'description' => 'Retrieve']);
+        RolePermission::create(['role_id' => $adminRole->role_id, 'description' => 'Update']);
+        RolePermission::create(['role_id' => $adminRole->role_id, 'description' => 'Delete']);
+
+        // Create User Role
+        $userRole = UserRole::create([
+            'role_name' => 'User',
+            'description' => 'Regular user with limited access',
+        ]);
+
+        // Assign permissions to User
+        RolePermission::create(['role_id' => $userRole->role_id, 'description' => 'Create']);
+        RolePermission::create(['role_id' => $userRole->role_id, 'description' => 'Retrieve']);
     }
 }

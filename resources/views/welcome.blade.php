@@ -70,20 +70,29 @@
     <div class="flex-center position-ref full-height">
         <div class="content">
             <div class="title m-b-md">
-                My tutorial App
+                My Tutorial App
             </div>
 
             <div class="links">
+                <a href="{{ url('/') }}">Home</a>
                 @if (Route::has('login'))
-                @auth
-                <a href="{{ url('/todo') }}">Home</a>
-                @else
-                <a href="{{ route('login') }}">Login</a>
+                    @auth
+                        @php
+                            $role = optional(Auth::user()->role)->role_name;
+                        @endphp
 
-                @if (Route::has('register'))
-                <a href="{{ route('register') }}">Register</a>
-                @endif
-                @endauth
+                        @if ($role === 'Admin')
+                            <a href="{{ route('admin.dashboard') }}">Admin Dashboard</a>
+                        @elseif ($role === 'User')
+                            <a href="{{ route('todo.index') }}">To-Do List</a>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}">Login</a>
+
+                        @if (Route::has('register'))
+                            <a href="{{ route('register') }}">Register</a>
+                        @endif
+                    @endauth
                 @endif
             </div>
         </div>

@@ -1,10 +1,12 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UserRole;
+use App\Models\Todo;
+use App\Models\RolePermission;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
@@ -13,24 +15,56 @@ class AdminController extends Controller
      */
     public function index()
     {
-        return view('admin.dashboard');
+        $users = User::with('role')->get(); // Load users with their roles
+        return view('admin.dashboard', compact('users'));
     }
 
     /**
-     * Display a list of all users.
+     * Display tasks for a specific user.
      */
-    public function users()
+    public function userTasks($id)
     {
-        $users = User::with('role')->get();
-        return view('admin.users', compact('users'));
+        $user = User::with('todos', 'role')->findOrFail($id); // Load user with their tasks and role
+        return view('admin.usertasks', compact('user'));
     }
 
     /**
-     * Display a list of all roles.
+     * Deactivate a user.
      */
-    public function roles()
+    public function deactivateUser($id)
     {
-        $roles = UserRole::all();
-        return view('admin.roles', compact('roles'));
+        $user = User::findOrFail($id);
+        $user->update(['active' => false]);
+
+        return redirect()->route('admin.dashboard')->with('success', 'User deactivated successfully.');
+    }
+
+    /**
+     * Show the form for editing permissions for a user.
+     */
+    public function editPermissions($id)
+    {
+        $user = User::findOrFail($id);
+        $permissions = RolePermission::all(); // Fetch all available permissions
+        return view('admin.edit-permissions', compact('user', 'permissions'));
+    }
+
+    /**
+     * Update permissions for a user.
+     */
+    public function updatePermissions(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        // Validate the incoming permissions
+        $request->validate([
+            'permissions' => 'array',
+            'permissions.*' => 'exists:role_permissions,permission_id',
+        ]);
+
+        // Sync the user's permissions
+        $user->role->permissions()->sync($request->permissions);
+
+        return redirect()->route('admin.dashboard')->with('success', 'Permissions updated successfully.');
     }
 }
